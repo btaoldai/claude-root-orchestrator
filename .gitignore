@@ -1,0 +1,17 @@
+# Obsidian internal files
+.obsidian/
+.smart-env/
+
+# Claude Code runtime data (logs and backlogs are workspace-private)
+.claude/logs/
+.claude/backlogs/
+
+# Editor swap files
+*.swp
+*.swo
+
+# macOS metadata
+.DS_Store
+
+# Windows thumbnail cache
+Thumbs.db
