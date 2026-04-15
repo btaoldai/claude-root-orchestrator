@@ -123,6 +123,10 @@ The template is **model-agnostic**. Map your preferred LLMs to three tiers :
 
 In `AGENT.md` and `ORCHESTRATEUR.md`, model selection uses the `model-tier="high|mid|low"` attribute so you can swap your actual provider without touching the doctrine.
 
+### Token economy
+
+For detailed token consumption projections by task type and model tier, see [`TOKEN-ECONOMY.md`](./TOKEN-ECONOMY.md). An interactive SVG dashboard is available at [`token-economy-dashboard.html`](./token-economy-dashboard.html) — open it in any browser locally, no CDN or server required (vanilla SVG + vanilla JS in a single self-contained file).
+
 ---
 
 ## LLM Collaboration Architecture
