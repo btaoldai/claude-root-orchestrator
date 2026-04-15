@@ -1,0 +1,11 @@
+# Architecture diagrams will be placed here
+#
+# Recommended content :
+#   - c4-l1-context.mermaid      (System context)
+#   - c4-l2-containers.mermaid   (Container view)
+#   - dfd-data-flow.mermaid      (Data flow)
+#   - rbac-access.mermaid        (Access control matrix)
+#   - workflow-orchestrator.mermaid
+#   - llm-power.mermaid          (MCP + skills + connectors inventory)
+#
+# See AGENT.md `<architecture-docs>` for standards (ANSSI, ISO 27001, TOGAF, C4 Model).
