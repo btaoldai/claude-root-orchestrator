@@ -1,0 +1,78 @@
+# ==============================================================
+# .gitignore — V2 public template (claude-root-orchestrator)
+# Base inherited from V1, extended to exclude Rust dev artifacts
+# and internal project files that should NOT be published.
+# ==============================================================
+
+# --- V1 base (Obsidian + Claude Code) ---
+.obsidian/
+.smart-env/
+.claude/logs/
+.claude/backlogs/
+
+# --- Editor swap + OS metadata ---
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# --- IDEs ---
+.vscode/
+.idea/
+
+# ==============================================================
+# V2 additions — Local dev artifacts (do NOT publish)
+# ==============================================================
+
+# Rust build
+/target/
+Cargo.lock
+**/*.rs.bk
+*.pdb
+
+# Rust workspace source (private dev in this folder, not for the public template repo)
+/crates/
+/docker/
+/tests/
+/examples/
+/templates/
+Cargo.toml
+
+# ==============================================================
+# V2 additions — Internal docs (private, do NOT publish)
+# Only LLM-ARCHITECTURE.md (at root) is public-facing for docs.
+# ==============================================================
+
+/docs/_archive/
+/docs/plan-refacto-balises/
+/docs/adr/
+/docs/AGENT-MD-SPEC.md
+/docs/AUDIT-REPORT.md
+/docs/AUDIT-REPORT-PHASE3.md
+/docs/HTTP_TRANSPORT_IMPLEMENTATION.md
+/docs/architecture.md
+/docs/BENCHMARK.md
+
+# --- Internal GitHub config (Rust project CI, not for public template) ---
+/.github/
+
+# --- Internal changelog (v0.1/v0.2 Rust project history, private) ---
+CHANGELOG.md
+
+# --- Legacy V1 license file (replaced by LICENSE) ---
+LICENSE-MIT
+
+# ==============================================================
+# Build artifacts, logs, sessions
+# ==============================================================
+
+*.o
+*.so
+*.dylib
+*.dll
+*.exe
+logs/
+*.log
+sessions/
+*.session
