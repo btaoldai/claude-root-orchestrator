@@ -135,6 +135,7 @@ Markdown compatible with Obsidian (YAML frontmatter, callouts, wikilinks).
 <constraint id="mid-tier-no-lock">Mid-tier agents can modify non-LOCK files.</constraint>
 <constraint id="high-tier-only-locks">Only high-tier models may propose modifications to LOCK files.</constraint>
 <constraint id="permissions-check">Before spawning an agent (Task tool), the orchestrator MUST verify the agent will have write access (Write, Bash, MCP create_vault_file) to the target folder. If the folder is in `.claude/` or `.obsidian/`, prefer the orchestrator for the final write. Sandbox sub-agents may be blocked by permissions : never delegate without verification.</constraint>
+<token-economy-reference>Token cost projections per task type and model tier : see [[TOKEN-ECONOMY]]. Interactive dashboard in `token-economy-dashboard.html` (vanilla SVG, no CDN, opens in any browser).</token-economy-reference>
 <model-tier-examples>
 <tier id="high" examples="Claude Opus 4.x, GPT-4 Turbo, GPT-4o, Gemini 1.5 Pro, Llama 3.1 405B, Mistral Large, DeepSeek-V3"/>
 <tier id="mid" examples="Claude Sonnet 4.x, GPT-4o mini, Gemini 1.5 Flash, Llama 3.1 70B, Mistral Medium, DeepSeek-Coder"/>
