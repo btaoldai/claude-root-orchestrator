@@ -1,112 +1,133 @@
-# Claude Root Orchestrator — Multi-Agent Template for Claude Code
+# Claude Root Orchestrator — Multi-Agent Template for AI Coding Assistants
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
+[![Version](https://img.shields.io/badge/version-2.0.0-blue.svg)](./CHANGELOG.md)
 
-A production-ready, reusable template for orchestrating complex software projects using Claude Code with a multi-agent architecture. Designed for developers and technical leads who want structured, auditable, and scalable AI-assisted development workflows.
+A production-ready, reusable template for orchestrating complex software projects using AI coding assistants (Claude Code, Cursor, Aider, and compatible tools) with a multi-agent architecture. Designed for developers and technical leads who want structured, auditable, and scalable AI-assisted development workflows.
+
+---
+
+## What's new in v2.0.0
+
+**BREAKING CHANGES** from v1.x :
+
+- `CLAUDE.md` renamed to **`AGENT.md`** for multi-model compatibility (works with Claude Code, but also other AI assistants that read instruction files).
+- Format migrated from pure Markdown to **XML hybrid minimalist** : structure carried by self-descriptive XML tags, content preserved as markdown (paragraphs, wikilinks, code blocks).
+- LOCK markers `[LOCK]` / `[/LOCK]` replaced by `lock="true"` XML attribute — granularity is now per-tag.
+- Cornerstone tag `<universal-backlog-trace>` added : every agent, regardless of scope or model, leaves a minimal XML trace at mission end. The orchestrator reconstructs state from these traces rather than requiring all agents to re-read the full ORCHESTRATEUR.md.
+- Ten session rules migrated from `AGENT.md` ROOT into `ORCHESTRATEUR.md` `<orchestration-rules>`. Only the active orchestrator needs to read them.
+- Full English documentation (v1.x was partially French).
+
+Token cost improvement : approximately **-37%** on structural files (AGENT.md ROOT) and **-16%** on ORCHESTRATEUR.md versus v1.2 markdown.
+
+See [CHANGELOG.md](./CHANGELOG.md) for full detail.
+
+---
+
+## Zero-Config Setup via `<init-bootstrap>`
+
+This v2 template ships with an **automatic initialization mechanism**. You don't have to hunt for placeholders or edit files manually.
+
+On the first session after cloning, the orchestrator reads AGENT.md, detects the `<init-bootstrap>` block at the top, and walks you through setup :
+
+1. **It identifies every `{{PLACEHOLDER}}` across the 4 root doctrine files** (AGENT.md, ORCHESTRATEUR.md, LLM-ARCHITECTURE.md, README.md).
+2. **It asks you in chat, one placeholder at a time** : "What value for `{{OPERATOR_NAME}}` ?", "What value for `{{WORKSPACE_NAME}}` ?", etc. No git config scraping, no OS username sniffing — explicit manual input only, you stay in full control of what you disclose.
+3. **It shows you the full replacement map** and waits for your explicit "yes", "ok", or "go".
+4. **It applies all replacements** across the 4 files.
+5. **It self-deletes the `<init-bootstrap>` block** from AGENT.md. Subsequent sessions will never see it again.
+6. **It logs the operation** in `.claude/logs/orchestrator/YYYY-MM-DD-HHMM-init-bootstrap.md`.
+
+Expected first-run pre-prompt flow :
+
+```
+You  : [open Claude Code in the cloned template folder, say anything]
+Claude: I detected an uninitialized template (placeholders present in 4 files).
+        I will walk you through setup step by step.
+        First question : What value for `{{OPERATOR_NAME}}` ? (context : shown in AGENT.md identity and in LLM-ARCHITECTURE.md diagram)
+You  : Alice
+Claude: Got it. Next : What value for `{{OPERATOR_ALIAS}}` ? (context : used in README install example)
+You  : alice-dev
+... [repeats for each placeholder] ...
+Claude: Here is the full replacement map :
+        {{OPERATOR_NAME}}       -> Alice
+        {{OPERATOR_ALIAS}}      -> alice-dev
+        {{WORKSPACE_NAME}}      -> alice-vault
+        {{PROJECT_ALPHA}}       -> solana-bot
+        ...
+        Proceed with replacements ?
+You  : go
+Claude: [applies replacements, removes <init-bootstrap>, bumps version, logs to .claude/logs/orchestrator/]
+        Template initialized. The init-bootstrap is gone. Ready to work.
+```
+
+**Prefer manual setup?** Skip the automatic flow by manually editing the 4 root files with your values, then remove the `<init-bootstrap>` block yourself. Both paths lead to the same state.
 
 ---
 
 ## Overview
 
-This template provides a complete CLAUDE.md-based orchestration system for Claude Code. It defines a hierarchy of instruction files, agent routing logic, model selection rules, and collaboration patterns that allow a single operator to coordinate multiple specialized AI agents across different projects within a single workspace.
+This template provides a complete **AGENT.md-based orchestration system** for AI coding assistants. It defines a hierarchy of instruction files, agent routing logic, model selection rules, and collaboration patterns that allow a single operator to coordinate multiple specialized AI agents across different projects within a single workspace.
 
-The core insight is that Claude Code works best not as a single monolithic assistant, but as an orchestrator that delegates tasks to specialized sub-agents — each with the right model, the right context, and the right permissions for its scope.
+The core insight is that AI coding assistants work best not as a single monolithic assistant, but as an orchestrator that delegates tasks to specialized sub-agents — each with the right model, the right context, and the right permissions for its scope.
 
 ---
 
 ## Architecture
 
-### CLAUDE.md Hierarchy
+### AGENT.md Hierarchy
 
-The system relies on a cascading hierarchy of CLAUDE.md instruction files:
+The system relies on a cascading hierarchy of AGENT.md instruction files :
 
 ```
-CLAUDE.md (ROOT — Orchestrator)              [scope: entire workspace]
+AGENT.md (ROOT — Orchestrator)                [scope: entire workspace]
   |
-  +-- project-alpha/CLAUDE.md               [scope: project alpha only]
+  +-- project-alpha/AGENT.md                  [scope: project alpha only]
   |     Inherits ROOT rules, adds project-specific workflow
   |
-  +-- project-beta/CLAUDE.md                [scope: project beta only]
+  +-- project-beta/AGENT.md                   [scope: project beta only]
   |     Inherits ROOT rules, adds project-specific workflow
   |     |
-  |     +-- project-beta/sub-module/CLAUDE.md   [scope: sub-module]
+  |     +-- project-beta/sub-module/AGENT.md  [scope: sub-module]
   |
-  +-- courses/CLAUDE.md                     [scope: course materials]
+  +-- courses/AGENT.md                        [scope: course materials]
         Inherits ROOT rules, adds pedagogical constraints
 ```
 
-**Inheritance rules:**
-- Child CLAUDE.md files inherit all ROOT rules unless explicitly overriding
-- Overrides are permitted only for technical scope (encoding, tooling, workflow)
-- ROOT invariants (git policy, LOCK rules, emoji policy) cannot be overridden
-- Any CLAUDE.md is a LOCK file — no agent may modify it without operator approval
+**Inheritance rules :**
+
+- Child AGENT.md files inherit all ROOT rules unless explicitly overriding.
+- Overrides are permitted only for technical scope (encoding, tooling, workflow).
+- ROOT invariants (git policy, LOCK rules, emoji policy) cannot be overridden.
+- Any AGENT.md is a LOCK file — no agent may modify it without operator approval.
 
 ### ORCHESTRATEUR.md — The Routing Table
 
-A dedicated `ORCHESTRATEUR.md` file acts as the single source of truth for agent routing. It contains:
+A dedicated `ORCHESTRATEUR.md` file acts as the single source of truth for agent routing. It contains :
 
 - The active project registry with current status
-- Agent team definitions (personas, models, responsibilities)
+- Stable / paused / archived projects
+- Agent team definitions (personas, models, responsibilities, can-orchestrate flag)
 - Session detection logic (which agent to activate based on user message)
-- Cross-project dependency map
+- Orchestration rules (10 rules migrated from ROOT in v2)
+- Active decisions (distinct from history — decisions currently driving behavior)
 
-### Agent Model Selection
+### Agent Model Selection (tier-based, multi-LLM)
 
-| Task Type | Model | Trigger |
-|-----------|-------|---------|
-| Code, security audit, architecture, heavy indexing | claude-opus-4-6 | Default for critical tasks |
-| Documentation, slides, organization, light refactoring | claude-sonnet-4-6 | Default for medium tasks |
-| Research, quick questions, vault navigation | claude-haiku-4-5 | Keyword DISCUSSION or simple delegation |
+The template is **model-agnostic**. Map your preferred LLMs to three tiers :
+
+| Task Type | Model Tier | Trigger | Example models |
+|-----------|-----------|---------|----------------|
+| Code, security audit, architecture, heavy indexing | `high` | Default for critical tasks | Claude Opus, GPT-4 Turbo, GPT-4o, Gemini 1.5 Pro, Llama 3.1 405B, Mistral Large |
+| Documentation, slides, organization, light refactoring | `mid` | Default for medium tasks | Claude Sonnet, GPT-4o mini, Gemini 1.5 Flash, Llama 3.1 70B, Mistral Medium |
+| Research, quick questions, vault navigation | `low` | Keyword DISCUSSION or simple delegation | Claude Haiku, GPT-3.5 Turbo, Gemini Nano, Llama 3.1 8B, Mistral Small |
+
+In `AGENT.md` and `ORCHESTRATEUR.md`, model selection uses the `model-tier="high|mid|low"` attribute so you can swap your actual provider without touching the doctrine.
 
 ---
 
 ## LLM Collaboration Architecture
 
-This template is designed for a multi-LLM workflow where different AI systems handle different parts of the development process based on their strengths.
-
-```
-                        +------------------+
-                        |    OPERATOR      |
-                        |  (human lead)    |
-                        +--------+---------+
-                                 |
-           +---------------------+---------------------+
-           |                     |                     |
-  +--------v--------+   +--------v--------+   +--------v--------+
-  | Claude Opus 4.6 |   | Claude Sonnet   |   | Claude Haiku    |
-  | Code & Audit    |   | Docs & Refactor |   | Research & Nav  |
-  | Architecture    |   | Slides & Org    |   | Quick lookups   |
-  +-----------------+   +-----------------+   +-----------------+
-                                 |
-                        +--------v---------+
-                        | Perplexity /     |
-                        | Gemini           |
-                        | Tech watch       |
-                        | Web research     |
-                        +------------------+
-```
-
-### Model Responsibilities
-
-| LLM | Primary Role | Use When |
-|-----|-------------|----------|
-| Claude Opus 4.6 | Architecture decisions, security audits, complex debugging, production code | High-stakes code, infra changes, cryptography, auth systems |
-| Claude Sonnet 4.6 | Documentation, refactoring, course materials, moderate code tasks | Non-critical files, writing tasks, reorganization |
-| Claude Haiku 4.5 | Fast lookups, vault navigation, information retrieval | Read-only tasks, quick questions, agent delegation |
-| Perplexity / Gemini | Technology watch, web research, up-to-date documentation lookup | External research, library version checking, CVE lookup |
-
-### Collaboration Workflow Example
-
-A typical feature development cycle using this multi-LLM system:
-
-1. **Research phase** — Perplexity/Gemini: look up current best practices, check for relevant CVEs, find library documentation
-2. **Architecture phase** — Claude Opus: design the system, write ADRs, define interfaces
-3. **Implementation phase** — Claude Opus: write production code, implement security controls
-4. **Documentation phase** — Claude Sonnet: write user-facing docs, inline comments, README updates
-5. **Review phase** — Claude Opus: security audit, code review, performance analysis
-6. **Communication phase** — Claude Sonnet: generate changelogs, slide decks, status reports
-
-This pipeline ensures that each LLM operates within its optimal domain while the operator maintains control over all critical decisions.
+This template is designed for a multi-LLM workflow where different AI systems handle different parts of the development process based on their strengths. See [LLM-ARCHITECTURE.md](./LLM-ARCHITECTURE.md) for full detail (now in XML hybrid v2).
 
 ---
 
@@ -114,45 +135,57 @@ This pipeline ensures that each LLM operates within its optimal domain while the
 
 ### Prerequisites
 
-- [Claude Code](https://claude.ai/code) installed and authenticated
+- [Claude Code](https://claude.ai/code) (or a compatible AI coding assistant that reads AGENT.md) installed and authenticated
 - An Obsidian vault (or any directory-based workspace)
-- Basic familiarity with CLAUDE.md instruction files
+- Basic familiarity with AGENT.md-style instruction files
 
 ### Installation
 
-1. Clone this repository into your workspace root:
+1. Clone this repository into your workspace root :
 
 ```bash
-git clone https://github.com/{{OPERATOR_ALIAS}}/claude-root-orchestrator .claude-template
+git clone https://github.com/btaoldai/claude-root-orchestrator .agent-template
 ```
 
-2. Copy the template files to your workspace root:
+2. Copy the template files to your workspace root :
 
 ```bash
-cp .claude-template/CLAUDE.md ./CLAUDE.md
-cp .claude-template/ORCHESTRATEUR.md ./00-control-center/ORCHESTRATEUR.md
+cp .agent-template/AGENT.md ./AGENT.md
+cp .agent-template/ORCHESTRATEUR.md ./00-control-center/ORCHESTRATEUR.md
+cp .agent-template/LLM-ARCHITECTURE.md ./00-control-center/_architecture/LLM-ARCHITECTURE.md
 ```
 
-3. Replace all placeholders with your own values:
+3. Replace all placeholders with your own values :
 
 | Placeholder | Replace with |
-|-------------|-------------|
+|-------------|--------------|
 | `{{OPERATOR_NAME}}` | Your full name |
 | `{{OPERATOR_ALIAS}}` | Your username or handle |
-| `{{PROJECT_ALPHA}}` | Your first project name |
-| `{{PROJECT_BETA}}` | Your second project name |
+| `{{OPERATOR_PROFILE}}` | Short profile (e.g., "Cybersecurity instructor and independent developer") |
+| `{{OPERATOR_EXPERTISE}}` | Expertise areas (e.g., "Rust, DevOps, infosec") |
+| `{{WORKSPACE_NAME}}` | Your workspace name |
 | `{{WORKSPACE_ROOT}}` | Absolute path to your workspace |
+| `{{PRIMARY_LANGUAGE}}` | Your preferred documentation language (English, French, etc.) |
+| `{{PRIMARY_BACKEND_STACK}}` | Your primary backend tech |
+| `{{PRIMARY_FRONTEND_STACK}}` | Your primary frontend tech |
+| `{{INFRA_STACK}}` | Your infra tech |
+| `{{PROJECT_ALPHA}}` | Your first active project name |
+| `{{PROJECT_BETA}}` | Your second active project name |
+| `{{PROJECT_GAMMA}}`, `{{PROJECT_DELTA}}` | Stable projects |
+| `{{COURSE_NAME}}` | A course name if applicable |
+| `{{MCP_SERVER_COUNT}}`, `{{SKILL_COUNT}}`, `{{CONNECTOR_COUNT}}` | Your MCP inventory counts |
+| `{{DATE}}` | Current date (in LLM-ARCHITECTURE.md) |
 
 4. Create the required directory structure (see File Structure below).
 
-5. Open Claude Code at your workspace root and start a new session. The orchestrator will read CLAUDE.md automatically.
+5. Open Claude Code (or your AI assistant) at your workspace root and start a new session. The orchestrator will read AGENT.md automatically.
 
 ### Adapting the Template
 
-- **Add a project**: Create a `project-name/CLAUDE.md` inheriting from ROOT, then register it in `ORCHESTRATEUR.md`
-- **Add an agent persona**: Define the persona in `ORCHESTRATEUR.md` with its model, scope, and triggers
-- **Add a LOCK file**: Document it in CLAUDE.md section 10 and announce it in the session log
-- **Change model routing**: Edit the model selection table in CLAUDE.md section 8
+- **Add a project** : create a `project-name/AGENT.md` inheriting from ROOT, then register it in `ORCHESTRATEUR.md` `<active-projects>`.
+- **Add an agent persona** : define the persona in `ORCHESTRATEUR.md` `<agent-routing>` with its model, triggers, description, and `can-orchestrate` flag.
+- **Add a LOCK file** : register it in `AGENT.md` `<lock-policy>` and log the addition in the session orchestrator log. Update `.claude/context/lock-registry.md` for the central registry.
+- **Change model routing** : edit the `<model-routing>` table in AGENT.md ROOT.
 
 ---
 
@@ -160,30 +193,35 @@ cp .claude-template/ORCHESTRATEUR.md ./00-control-center/ORCHESTRATEUR.md
 
 ```
 workspace-root/
-  CLAUDE.md                              # ROOT orchestrator (this template)
+  AGENT.md                               # ROOT orchestrator (this template)
   .gitignore                             # Obsidian + Claude Code exclusions
   00-control-center/
-    01-DASHBOARD.md                      # Human-readable project overview (Semi-LOCK)
+    01-DASHBOARD.md                      # Human-readable project overview (semi-LOCK)
     ORCHESTRATEUR.md                     # Agent routing table (LOCK)
     _architecture/                       # Diagrams: workflow, C4, LLM architecture
-    _archive/                            # Archived artefacts with date prefix
+      LLM-ARCHITECTURE.md                # Multi-LLM methodology (XML hybrid v2)
+    _archive/                            # Archived artifacts with date prefix
   .claude/
     settings.local.json                  # Claude Code permissions
-    context/                             # Reference docs (plugins, MCP, tokens)
+    context/                             # Reference docs
+      lock-registry.md                   # Central registry of LOCK files
     logs/
-      orchestrator/                      # Session logs (YYYY-MM-DD-HH:MM.md)
+      orchestrator/                      # Session logs (YYYY-MM-DD-HHMM.md)
       agents/                            # Per-agent task logs
+        {role}/
+          {project|centre-controle|_transverse}/
+            YYYY-MM-DD-HHMM-mission-slug.md
     backlogs/                            # claude-friendly + human-friendly backlogs
   project-alpha/
-    CLAUDE.md                            # Project-specific instructions (child)
+    AGENT.md                             # Project-specific instructions (child)
     NEXT-STEPS.md                        # Living roadmap for this project
     architecture/                        # C4, NFD, DFD, RBAC diagrams
   project-beta/
-    CLAUDE.md
+    AGENT.md
     NEXT-STEPS.md
     architecture/
   courses/
-    CLAUDE.md                            # Course-specific constraints
+    AGENT.md                             # Course-specific constraints
     course-name/
       sessions/                          # Individual course sessions (LOCK when distributed)
 ```
@@ -196,77 +234,71 @@ workspace-root/
 
 Certain files are declared LOCK and cannot be modified by any agent without explicit operator approval. The operator must provide a verbal confirmation ("yes", "ok", "go") in chat before any modification is applied.
 
-Default LOCK files in this template:
-- `CLAUDE.md` (all levels of the hierarchy)
+Default LOCK files in this template :
+
+- `AGENT.md` (all levels of the hierarchy)
 - `ORCHESTRATEUR.md`
 - `Dossier-Template/` (template directories)
-- Distributed course sessions
+- Distributed course sessions (tracked in `.claude/context/lock-registry.md`)
 
 ### Semi-LOCK Files
 
-The `01-DASHBOARD.md` is Semi-LOCK: the orchestrator agent can update statuses and tick completed items, but individual sub-agents cannot modify it directly.
+The `01-DASHBOARD.md` is semi-LOCK : the orchestrator agent can update statuses and tick completed items, but individual sub-agents cannot modify it directly.
+
+### Universal Backlog Trace (v2 cornerstone)
+
+Every agent spawned in a session, regardless of its model tier (high, mid, low) or scope, MUST produce a minimal XML backlog entry at mission end. This enables :
+
+- The orchestrator to consolidate state without requiring all agents to read the full ORCHESTRATEUR.md (token savings).
+- Crash recovery and session handoff.
+- Audit trail and per-agent metrics.
+
+Path convention : `.claude/logs/agents/{role}/{project|centre-controle|_transverse}/{YYYY-MM-DD-HHMM}-{mission-slug}.md`.
 
 ### Session Logging
 
-Every session creates a log file at `.claude/logs/orchestrator/YYYY-MM-DD-HH:MM.md`. This provides an auditable trail of what was decided, what was delegated, and what was completed.
+Every session creates a log file at `.claude/logs/orchestrator/YYYY-MM-DD-HHMM.md`. This provides an auditable trail of what was decided, what was delegated, and what was completed.
 
-### Backlogs
+### Dual Backlogs
 
-Two parallel backlog formats are maintained in `.claude/backlogs/`:
-- `claude-friendly`: structured for agent consumption (machine-readable, concise)
-- `human-friendly`: structured for the operator (prose, context, priorities)
+Two parallel backlog formats are maintained in `.claude/backlogs/` :
+
+- `claude-friendly/` : structured for agent consumption (machine-readable, concise, event-driven micro-writes of under 50 tokens).
+- `human-friendly/` : structured for the operator (prose, context, priorities).
 
 ---
 
 ## Credits and Methodology
 
-This orchestration system is grounded in the principles of structured AI collaboration as defined by Anthropic's AI Fluency Framework:
+This orchestration system is grounded in the principles of structured AI collaboration as defined by Anthropic's AI Fluency Framework :
 
 [Anthropic AI Fluency Framework — Foundations](https://anthropic.skilljar.com/ai-fluency-framework-foundations)
 
-Key methodological principles applied in this template:
+Key methodological principles applied in this template :
 
-- **Operator/User/Assistant distinction**: The CLAUDE.md hierarchy maps directly to the operator-level trust model
-- **Prompt chaining**: Complex tasks are decomposed into sequential agent calls with explicit handoffs
-- **Tool use and delegation**: Sub-agents are given only the permissions they need (principle of least privilege)
-- **Agentic safety**: LOCK files, explicit confirmation gates, and audit logs prevent unintended autonomous modifications
+- **Operator/User/Assistant distinction** — the AGENT.md hierarchy maps directly to the operator-level trust model.
+- **Prompt chaining** — complex tasks are decomposed into sequential agent calls with explicit handoffs.
+- **Tool use and delegation** — sub-agents are given only the permissions they need (principle of least privilege).
+- **Agentic safety** — LOCK files, explicit confirmation gates, and audit logs prevent unintended autonomous modifications.
+- **Universal traceability (v2)** — the `<universal-backlog-trace>` requirement enables post-hoc reconstruction of multi-agent sessions without requiring full context sharing.
 
 ### The "Code with Review" Method
 
-This template applies the AI Fluency Framework through a concrete iterative methodology called
-"Code with Review". Each development cycle proceeds through six stages:
+This template applies the AI Fluency Framework through a concrete iterative methodology called **"Code with Review"**. Each development cycle proceeds through six stages, documented in detail in [`LLM-ARCHITECTURE.md`](./LLM-ARCHITECTURE.md) section `<development-workflow>` :
 
-1. **Intent Declaration** — The operateur formulates the objective in natural language. The
-   orchestrateur (Claude Opus) decomposes it into sub-tasks and dispatches to specialized agents.
+1. **Research** — external LLMs (Perplexity, Gemini) gather current best practices, CVEs, library docs.
+2. **Architecture** — a high-tier model designs the system, produces ADRs and diagrams.
+3. **Implementation** — a high-tier model writes production code, unit tests, integration.
+4. **Documentation** — a mid-tier model writes README, inline docs, changelog, slides.
+5. **Security Review** — a high-tier model audits the code, threat model, RBAC validation.
+6. **Operator Validation** — the human operator validates all structural decisions and triggers git actions (commit, push, merge) — never autonomous.
 
-2. **Multi-Agent Execution** — Multiple agents work in parallel on distinct files (zero conflict).
-   Each agent is assigned the optimal model for its task: Opus for critical code, Sonnet for
-   documentation, Haiku for research and navigation.
+The four practical principles driving this method (derived from the AI Fluency Framework) :
 
-3. **Automated Review** — On each agent completion, the orchestrateur consolidates results.
-   Automated validation tools (`cargo test`, `cargo clippy --pedantic`, `cargo audit`, `cargo fmt`)
-   serve as quality gates before any result is accepted.
-
-4. **Human-in-the-Loop Validation** — The operateur validates all structural decisions. LOCK
-   files are only modified with explicit approval. Git actions (commit, push, merge) are always
-   operator-triggered — never autonomous.
-
-5. **Cross-LLM Enrichment** — For exploratory research or technology watch, external LLMs
-   (Perplexity with Gemini) complement Claude. Results are synthesized by the orchestrateur
-   before integration into any artifact. External outputs are never committed raw.
-
-6. **Documentation-as-Code** — Every decision is traced (ADR), every session logged, every
-   backlog synchronized. Documentation lives with the code, not alongside it as an afterthought.
-
-The four practical principles driving this method (derived from the AI Fluency Framework):
-
-- **Practical**: every LLM interaction produces a concrete artifact (code, doc, diagram)
-- **Efficient**: routing by optimal model (Opus is not used for a simple lookup)
-- **Ethical**: full transparency on LLM usage, credits in commits, no hidden automation
-- **Safe**: zero-trust by default, credentials never exposed, mandatory human validation
-
-Full technical detail for this methodology is documented in
-[`_architecture/templatebat/LLM-ARCHITECTURE.md`](./LLM-ARCHITECTURE.md).
+- **Practical** — every LLM interaction produces a concrete artifact (code, doc, diagram).
+- **Efficient** — routing by optimal model tier (high-tier is not used for a simple lookup).
+- **Ethical** — full transparency on LLM usage, credits in commits, no hidden automation.
+- **Safe** — zero-trust by default, credentials never exposed, mandatory human validation.
 
 ---
 
