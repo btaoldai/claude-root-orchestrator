@@ -6,7 +6,7 @@ tags:
 version: 2.0.0
 created: 2026-03-31
 updated: 2026-04-14
-author: "{{OPERATOR_NAME}}"
+author: "btaoldai"
 changelog: |
   v2.0.0 - XML hybrid conversion, renamed from Claude-specific to multi-model template (AGENT.md compatible), full English
   v1.0.0 - initial markdown version with ASCII diagram
@@ -14,7 +14,7 @@ changelog: |
 
 # LLM Architecture — Multi-Model Collaboration
 
-> Version 2.0.0 | Last updated : {{DATE}}
+> Version 2.0.0 | Last updated : 2026-04-14
 
 <llm-architecture version="2.0.0">
 
