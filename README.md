@@ -1,9 +1,19 @@
 # Claude Root Orchestrator — Multi-Agent Template for AI Coding Assistants
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
-[![Version](https://img.shields.io/badge/version-2.0.0-blue.svg)](./CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-2.2.0-blue.svg)](./CHANGELOG.md)
 
 A production-ready, reusable template for orchestrating complex software projects using AI coding assistants (Claude Code, Cursor, Aider, and compatible tools) with a multi-agent architecture. Designed for developers and technical leads who want structured, auditable, and scalable AI-assisted development workflows.
+
+---
+
+## What's new in v2.2.0
+
+- **Skill layer** : `skills/skill-root/SKILL.md`, a root orchestrator *skill* that complements the root `AGENT.md`. It runs an **INIT-SESSION** hook at the first message (skills inventory, MCP servers and connectors inventory, LOCAL / NOMAD environment detection, VERSION-CHECK of the workspace, 5-line announcement), then **announces every skill or MCP server** it mobilises along the session — the operator always sees which skill is at work and why.
+- **availability-constraints** hook : working-day rules (`{{WORK_DAY_HOURS}}`, `{{EARLIEST_START}}`, `{{PREFERRED_DAY_OFF}}`) checked before any schedule proposal.
+- `scripts/check-router.py` : one-command drift check between your skill directory and the router (unrouted skills, broken back-references, missing targets).
+- `SECURITY.md`, `CHANGELOG.md`, hardened `.gitignore` (MCP configs, `.env*`, local settings, secrets).
+- `<init-bootstrap>` resolves the new placeholders in the skill too. No breaking change.
 
 ---
 
@@ -123,6 +133,16 @@ The template is **model-agnostic**. Map your preferred LLMs to three tiers :
 
 In `AGENT.md` and `ORCHESTRATEUR.md`, model selection uses the `model-tier="high|mid|low"` attribute so you can swap your actual provider without touching the doctrine.
 
+### Skill layer (v2.2)
+
+`AGENT.md` + `ORCHESTRATEUR.md` govern the **local session** (budget, agent waves, sprint, logs). `skills/skill-root/SKILL.md` governs the **universal behaviour** of the assistant on every surface (chat, IDE, cloud, mobile) : who the operator is, how to communicate, which skill to load for which request, and the INIT-SESSION ritual. Install it as a skill in your assistant and keep a copy under `.claude/skills/skill-root/` ; `VERSION-CHECK` compares the two.
+
+Router rules use **example skill names** (`code-style`, `git-workflow`, `test-reporter`, `diagram-forge`, `teaching-content`…) : rename them to your own skills and delete what you do not need. Then run :
+
+```bash
+python3 scripts/check-router.py --root .claude/skills/skill-root/SKILL.md --skills-dir .claude/skills
+```
+
 ### Token economy
 
 For detailed token consumption projections by task type and model tier, see [`TOKEN-ECONOMY.md`](./TOKEN-ECONOMY.md). An interactive SVG dashboard is available at [`token-economy-dashboard.html`](./token-economy-dashboard.html) — open it in any browser locally, no CDN or server required (vanilla SVG + vanilla JS in a single self-contained file).
@@ -157,6 +177,8 @@ git clone https://github.com/btaoldai/claude-root-orchestrator .agent-template
 cp .agent-template/AGENT.md ./AGENT.md
 cp .agent-template/ORCHESTRATEUR.md ./00-control-center/ORCHESTRATEUR.md
 cp .agent-template/LLM-ARCHITECTURE.md ./00-control-center/_architecture/LLM-ARCHITECTURE.md
+mkdir -p ./.claude/skills/skill-root && cp .agent-template/skills/skill-root/SKILL.md ./.claude/skills/skill-root/SKILL.md
+cp .agent-template/scripts/check-router.py ./scripts/check-router.py
 ```
 
 3. Replace all placeholders with your own values :
@@ -179,6 +201,10 @@ cp .agent-template/LLM-ARCHITECTURE.md ./00-control-center/_architecture/LLM-ARC
 | `{{COURSE_NAME}}` | A course name if applicable |
 | `{{MCP_SERVER_COUNT}}`, `{{SKILL_COUNT}}`, `{{CONNECTOR_COUNT}}` | Your MCP inventory counts |
 | `{{DATE}}` | Current date (in LLM-ARCHITECTURE.md) |
+| `{{OPERATOR_LOCATION}}`, `{{OPERATOR_OS}}`, `{{OPERATOR_AUDIENCES}}`, `{{OPERATOR_TAX_STATUS}}` | Identity lines of `skills/skill-root/SKILL.md` |
+| `{{OPERATOR_COGNITIVE_STYLE}}`, `{{OPERATOR_COGNITIVE_STYLE_NOTE}}` | How you think and how the assistant should read your messages |
+| `{{STUDENT_LEVELS}}`, `{{UNROUTED_ALLOWLIST}}`, `{{CALENDAR_SOURCE}}` | Inferences and inventories of skill-root |
+| `{{WORK_DAY_HOURS}}`, `{{EARLIEST_START}}`, `{{PREFERRED_DAY_OFF}}`, `{{VALID_DAY_PATTERNS}}` | availability-constraints hook |
 
 4. Create the required directory structure (see File Structure below).
 
