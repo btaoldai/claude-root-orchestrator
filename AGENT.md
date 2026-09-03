@@ -2,27 +2,28 @@
 tags:
   - claude/instructions
   - claude/centre-controle
-version: 2.0.0
+version: 2.2.0
 created: 2026-03-27
-updated: 2026-04-14
+updated: 2026-09-02
 lock: absolute
 changelog: |
+  v2.2.0 - Add skills/skill-root/SKILL.md (INIT-SESSION, continuous announcement, VERSION-CHECK, availability-constraints, example router), scripts/check-router.py, SECURITY.md, CHANGELOG.md. init-bootstrap now also resolves skills/skill-root/SKILL.md. No breaking change.
   v2.0.0 - BREAKING: rename CLAUDE.md to AGENT.md for multi-model compatibility (not Claude-only). Format migration from markdown v1.2 to XML hybrid minimalist. LOCK markers [LOCK]/[/LOCK] replaced by attribute lock="true" (per-tag granularity). Introduction of <universal-backlog-trace> as cornerstone. Ten session rules migrated to ORCHESTRATEUR.md. Token cost estimate: ~-37% vs v1.2 on structural files.
 ---
 
 # AGENT.md ROOT — Workspace Orchestrator [LOCK]
 
-<agent-md version="2.0.0" scope="workspace-root" lock="absolute">
+<agent-md version="2.2.0" scope="workspace-root" lock="absolute">
 
 <init-bootstrap mode="self-cleaning" execute-once="true">
 <description>
-Read by the orchestrator on the FIRST session only. Prompts the operator for each placeholder value, replaces them across the 4 root doctrine files (AGENT.md, ORCHESTRATEUR.md, LLM-ARCHITECTURE.md, README.md), then self-deletes this entire `<init-bootstrap>` block from AGENT.md. After first run, this block is gone ; subsequent sessions will never see it.
+Read by the orchestrator on the FIRST session only. Prompts the operator for each placeholder value, replaces them across the 5 root doctrine files (AGENT.md, ORCHESTRATEUR.md, LLM-ARCHITECTURE.md, README.md, skills/skill-root/SKILL.md), then self-deletes this entire `<init-bootstrap>` block from AGENT.md. After first run, this block is gone ; subsequent sessions will never see it.
 </description>
 
 <if condition="placeholders-unresolved" detection="grep for double-curly-braces patterns in the 4 root files">
 
 <step n="1" name="identify-placeholders">
-Scan AGENT.md, ORCHESTRATEUR.md, LLM-ARCHITECTURE.md, README.md for all `{{PLACEHOLDER_NAME}}` patterns. Build a deduplicated list. Expected placeholders include at minimum : OPERATOR_NAME, OPERATOR_ALIAS, OPERATOR_PROFILE, OPERATOR_EXPERTISE, WORKSPACE_NAME, WORKSPACE_ROOT, PRIMARY_LANGUAGE, PRIMARY_BACKEND_STACK, PRIMARY_FRONTEND_STACK, INFRA_STACK, PROJECT_ALPHA, PROJECT_BETA, PROJECT_GAMMA, PROJECT_DELTA, COURSE_NAME, MCP_SERVER_COUNT, SKILL_COUNT, CONNECTOR_COUNT, DATE.
+Scan AGENT.md, ORCHESTRATEUR.md, LLM-ARCHITECTURE.md, README.md, skills/skill-root/SKILL.md for all `{{PLACEHOLDER_NAME}}` patterns. Build a deduplicated list. Expected placeholders include at minimum : OPERATOR_NAME, OPERATOR_ALIAS, OPERATOR_PROFILE, OPERATOR_EXPERTISE, WORKSPACE_NAME, WORKSPACE_ROOT, PRIMARY_LANGUAGE, PRIMARY_BACKEND_STACK, PRIMARY_FRONTEND_STACK, INFRA_STACK, PROJECT_ALPHA, PROJECT_BETA, PROJECT_GAMMA, PROJECT_DELTA, COURSE_NAME, MCP_SERVER_COUNT, SKILL_COUNT, CONNECTOR_COUNT, DATE, and (skill-root) OPERATOR_LOCATION, OPERATOR_OS, OPERATOR_AUDIENCES, OPERATOR_COGNITIVE_STYLE, OPERATOR_COGNITIVE_STYLE_NOTE, OPERATOR_TAX_STATUS, STUDENT_LEVELS, UNROUTED_ALLOWLIST, WORK_DAY_HOURS, EARLIEST_START, PREFERRED_DAY_OFF, VALID_DAY_PATTERNS, CALENDAR_SOURCE.
 </step>
 
 <step n="2" name="prompt-operator" method="chat-interactive-explicit">
@@ -44,19 +45,19 @@ Wait for explicit "yes", "ok", or "go" from the operator before proceeding.
 </step>
 
 <step n="4" name="apply-replacement" scope="root-doctrine-files-only">
-Replace every `{{PLACEHOLDER_NAME}}` occurrence in the 4 root doctrine files : AGENT.md, ORCHESTRATEUR.md, LLM-ARCHITECTURE.md, README.md.
+Replace every `{{PLACEHOLDER_NAME}}` occurrence in the 5 root doctrine files : AGENT.md, ORCHESTRATEUR.md, LLM-ARCHITECTURE.md, README.md, skills/skill-root/SKILL.md.
 Do NOT touch any other file (children AGENT.md inside projects, source code, docs archives, etc.). Each child has its own init-bootstrap if needed.
 </step>
 
 <step n="5" name="self-delete">
 Remove this entire `<init-bootstrap>` block (opening tag to closing tag inclusive) from AGENT.md.
-Bump AGENT.md frontmatter version to `2.0.0-initialized-YYYYMMDD` where YYYYMMDD is the current date.
+Bump AGENT.md frontmatter version to `2.2.0-initialized-YYYYMMDD` where YYYYMMDD is the current date.
 </step>
 
 <step n="6" name="log">
 Create `.claude/logs/orchestrator/YYYY-MM-DD-HHMM-init-bootstrap.md` documenting :
 - Placeholders resolved (full map)
-- Files modified (4 files)
+- Files modified (5 files)
 - Self-deletion confirmation
 - Operator validation timestamp
 No CHANGELOG entry (CHANGELOG is excluded from public repo via .gitignore and is not persisted across the template boundary).
@@ -231,6 +232,10 @@ Detailed configuration : [[.claude/context/mcp-servers]].
 {{MCP_SERVER_COUNT}}+ active MCP servers, {{SKILL_COUNT}} skills, {{CONNECTOR_COUNT}} connectors.
 See the diagram for the living inventory.
 </mcp-integrations>
+
+<skills-pointer>
+Root orchestrator skill : [[skills/skill-root/SKILL]] — INIT-SESSION (skills + MCP inventory, environment detection, VERSION-CHECK, announcement), continuous announcement of every skill mobilised, availability-constraints, example router. Universal layer (every surface) ; this AGENT.md and ORCHESTRATEUR.md remain the local session layer. Drift check : `python3 scripts/check-router.py`.
+</skills-pointer>
 
 <key-files>
 [[AGENT]] this ROOT orchestrator file, LOCK.

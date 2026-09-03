@@ -57,8 +57,8 @@ Cargo.toml
 # --- Internal GitHub config (Rust project CI, not for public template) ---
 /.github/
 
-# --- Internal changelog (v0.1/v0.2 Rust project history, private) ---
-CHANGELOG.md
+# --- Internal Rust changelog stays private under its own name ---
+CHANGELOG-rust-internal.md
 
 # --- Legacy V1 license file (replaced by LICENSE) ---
 LICENSE-MIT
@@ -76,3 +76,20 @@ logs/
 *.log
 sessions/
 *.session
+
+# ==============================================================
+# V2.2 additions — secrets and local configuration (never publish)
+# ==============================================================
+.env
+.env.*
+.mcp.json
+.claude/mcp.json
+.claude/settings.local.json
+.claude/settings.local.json.bak*
+.claude/secrets/
+*.pem
+*.key
+
+# --- Python caches ---
+__pycache__/
+*.pyc
