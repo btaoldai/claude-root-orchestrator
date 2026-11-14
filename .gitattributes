@@ -1,0 +1,7 @@
+# LF line endings everywhere (Windows, macOS, Linux, CI); binaries marked.
+* text=auto eol=lf
+*.png binary
+*.jpg binary
+*.pdf binary
+*.zip binary
+*.tgz binary

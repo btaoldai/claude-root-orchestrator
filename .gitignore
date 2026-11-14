@@ -1,0 +1,47 @@
+# ==============================================================
+# .gitignore — claude-root-orchestrator public template (v2.3.0)
+# Keep these exclusions in your instantiated workspace too.
+# ==============================================================
+
+# --- Secrets and local configuration (never publish) ---
+.env
+.env.*
+!.env.example
+.mcp.json
+.claude/mcp.json
+.claude/settings.local.json
+.claude/settings.local.json.bak*
+.claude/secrets/
+secrets/
+*.pem
+*.key
+id_rsa*
+
+# --- Workspace state: logs, backlogs, operator environment ---
+.claude/logs/
+.claude/backlogs/
+.claude/context/operator-env.md
+logs/
+*.log
+sessions/
+*.session
+
+# --- Orchestrator working folders (moved here, deleted by the operator) ---
+_to-delete/
+
+# --- Obsidian and assistant caches ---
+.obsidian/
+.smart-env/
+
+# --- Editors and OS metadata ---
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# --- Python caches ---
+__pycache__/
+*.pyc

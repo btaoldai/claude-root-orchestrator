@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Token Economy Dashboard — claude-root-orchestrator V2</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: linear-gradient(135deg, #f5f7fa 0%, #e8edf3 100%);
+    color: #1a202c;
+    line-height: 1.5;
+    padding: 24px;
+    min-height: 100vh;
+  }
+  .container { max-width: 1200px; margin: 0 auto; }
+  header {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 24px 32px;
+    margin-bottom: 24px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  }
+  header h1 { font-size: 24px; font-weight: 700; margin-bottom: 4px; }
+  header p { color: #64748b; font-size: 14px; }
+  .layout { display: grid; grid-template-columns: 320px 1fr; gap: 24px; }
+  .panel {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  }
+  .panel h2 {
+    font-size: 14px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #475569;
+    margin-bottom: 16px;
+    border-bottom: 1px solid #e2e8f0;
+    padding-bottom: 8px;
+  }
+  .control-group { margin-bottom: 20px; }
+  .control-group label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 6px;
+    color: #334155;
+  }
+  .control-group select,
+  .control-group input[type="range"] {
+    width: 100%;
+    padding: 6px 10px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    font-size: 14px;
+    font-family: inherit;
+    background: #f8fafc;
+  }
+  .control-group input[type="range"] {
+    padding: 0;
+    height: 6px;
+    -webkit-appearance: none;
+    background: #e2e8f0;
+    outline: none;
+  }
+  .control-group input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #3b82f6;
+    cursor: pointer;
+  }
+  .value-display {
+    display: inline-block;
+    font-size: 13px;
+    color: #1e40af;
+    font-weight: 600;
+    margin-top: 4px;
+  }
+  .metrics {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .metric {
+    background: #f1f5f9;
+    border-radius: 8px;
+    padding: 16px;
+    text-align: center;
+  }
+  .metric .label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #64748b;
+    margin-bottom: 4px;
+  }
+  .metric .value {
+    font-size: 22px;
+    font-weight: 700;
+    color: #1e293b;
+  }
+  .metric .unit {
+    font-size: 12px;
+    color: #94a3b8;
+    margin-left: 2px;
+  }
+  .chart-container {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 16px;
+    min-height: 340px;
+  }
+  .warning {
+    background: #fef3c7;
+    border-left: 3px solid #f59e0b;
+    padding: 10px 14px;
+    border-radius: 4px;
+    font-size: 13px;
+    color: #78350f;
+    margin-top: 12px;
+    display: none;
+  }
+  .warning.visible { display: block; }
+  footer {
+    margin-top: 24px;
+    text-align: center;
+    color: #94a3b8;
+    font-size: 12px;
+  }
+  svg { display: block; width: 100%; height: auto; }
+</style>
+</head>
+<body>
+<div class="container">
+
+<header>
+  <h1>Token Economy Dashboard</h1>
+  <p>claude-root-orchestrator V2 — interactive projections for task × model tier consumption</p>
+</header>
+
+<div class="layout">
+
+  <aside class="panel">
+    <h2>Controls</h2>
+
+    <div class="control-group">
+      <label for="task">Task type</label>
+      <select id="task" onchange="updateAll()">
+        <option value="quick">Quick lookup / DISCUSSION</option>
+        <option value="research">External research synthesis</option>
+        <option value="doc">Documentation writing</option>
+        <option value="refactor">Light refactoring</option>
+        <option value="code" selected>Code generation</option>
+        <option value="architecture">Architecture design</option>
+        <option value="audit">Security audit</option>
+        <option value="orchestration">Multi-agent orchestration</option>
+      </select>
+    </div>
+
+    <div class="control-group">
+      <label for="tier">Model tier</label>
+      <select id="tier" onchange="updateAll()">
+        <option value="low">Low-tier (Haiku / Gemini Nano / GPT-3.5)</option>
+        <option value="mid">Mid-tier (Sonnet / GPT-4o mini / Gemini Flash)</option>
+        <option value="high" selected>High-tier (Opus / GPT-4 Turbo / Gemini Pro)</option>
+      </select>
+    </div>
+
+    <div class="control-group">
+      <label for="iterations">Iterations per session : <span class="value-display" id="iterations-value">3</span></label>
+      <input type="range" id="iterations" min="1" max="20" step="1" value="3" oninput="updateAll()">
+    </div>
+
+    <div class="control-group">
+      <label for="sessions">Sessions per month : <span class="value-display" id="sessions-value">20</span></label>
+      <input type="range" id="sessions" min="1" max="100" step="1" value="20" oninput="updateAll()">
+    </div>
+
+    <div class="warning" id="warning"></div>
+
+  </aside>
+
+  <main>
+
+    <div class="panel">
+      <h2>Projections</h2>
+
+      <div class="metrics">
+        <div class="metric">
+          <div class="label">Per iteration</div>
+          <div class="value" id="m-per-iter">0</div>
+          <div class="unit">tokens</div>
+        </div>
+        <div class="metric">
+          <div class="label">Per session</div>
+          <div class="value" id="m-per-session">0</div>
+          <div class="unit">tokens</div>
+        </div>
+        <div class="metric">
+          <div class="label">Monthly total</div>
+          <div class="value" id="m-monthly">0</div>
+          <div class="unit">tokens</div>
+        </div>
+      </div>
+
+      <div class="chart-container">
+        <svg id="chart" viewBox="0 0 800 320" preserveAspectRatio="xMidYMid meet"></svg>
+      </div>
+
+    </div>
+
+  </main>
+
+</div>
+
+<footer>
+  Ranges are approximate. Calibrate with your own session logs (see TOKEN-ECONOMY.md section 7).
+</footer>
+
+</div>
+
+<script>
+// =========================================================
+// Token consumption matrix (task x tier, input + output avg)
+// Ranges in thousands of tokens
+// null = not recommended / insufficient quality / cannot perform
+// =========================================================
+
+const matrix = {
+  quick:        { low: [2, 4],   mid: [3, 6],    high: null,     best: "low"  },
+  research:     { low: [3, 7],   mid: [5, 12],   high: null,     best: "low"  },
+  doc:          { low: null,     mid: [10, 25],  high: [15, 30], best: "mid"  },
+  refactor:     { low: null,     mid: [15, 30],  high: [25, 45], best: "mid"  },
+  code:         { low: null,     mid: [20, 40],  high: [30, 60], best: "high" },
+  architecture: { low: null,     mid: null,      high: [30, 60], best: "high" },
+  audit:        { low: null,     mid: null,      high: [40, 80], best: "high" },
+  orchestration:{ low: null,     mid: [40, 80],  high: [50, 120],best: "high" }
+};
+
+const taskLabels = {
+  quick: "Quick lookup",
+  research: "Research",
+  doc: "Documentation",
+  refactor: "Refactoring",
+  code: "Code generation",
+  architecture: "Architecture",
+  audit: "Security audit",
+  orchestration: "Orchestration"
+};
+
+// Template load cost per agent scope (k tokens, input)
+const templateLoad = { orchestrator: 11.5, executorHigh: 5, executorLow: 3.5, subagent: 2 };
+
+function formatTokens(k) {
+  if (k >= 1000) return (k/1000).toFixed(1) + "M";
+  if (k >= 1)    return k.toFixed(0) + "k";
+  return (k*1000).toFixed(0);
+}
+
+function computeAverage(range) {
+  return (range[0] + range[1]) / 2;
+}
+
+function updateAll() {
+  const task = document.getElementById("task").value;
+  const tier = document.getElementById("tier").value;
+  const iters = parseInt(document.getElementById("iterations").value);
+  const sessions = parseInt(document.getElementById("sessions").value);
+
+  document.getElementById("iterations-value").textContent = iters;
+  document.getElementById("sessions-value").textContent = sessions;
+
+  const cell = matrix[task][tier];
+  const warning = document.getElementById("warning");
+
+  if (cell === null) {
+    // Tier incompatible with task
+    document.getElementById("m-per-iter").textContent = "-";
+    document.getElementById("m-per-session").textContent = "-";
+    document.getElementById("m-monthly").textContent = "-";
+    warning.classList.add("visible");
+    const bestTier = matrix[task].best;
+    warning.textContent = `This tier is not recommended for this task. Best fit : ${bestTier}-tier. Change the tier to see projections.`;
+    drawChart([], task, tier, 0);
+    return;
+  } else {
+    warning.classList.remove("visible");
+  }
+
+  const perIter = computeAverage(cell); // in k tokens
+  const perSession = perIter * iters + templateLoad.orchestrator; // template load once per session
+  const monthly = perSession * sessions;
+
+  document.getElementById("m-per-iter").textContent = formatTokens(perIter);
+  document.getElementById("m-per-session").textContent = formatTokens(perSession);
+  document.getElementById("m-monthly").textContent = formatTokens(monthly);
+
+  // Build cumulative series for the month
+  const series = [];
+  let acc = 0;
+  for (let s = 0; s <= sessions; s++) {
+    series.push({ x: s, y: acc });
+    acc += perSession;
+  }
+
+  drawChart(series, task, tier, monthly);
+}
+
+function drawChart(series, task, tier, total) {
+  const svg = document.getElementById("chart");
+  svg.innerHTML = "";
+
+  const W = 800, H = 320;
+  const P = { top: 30, right: 30, bottom: 50, left: 70 };
+  const innerW = W - P.left - P.right;
+  const innerH = H - P.top - P.bottom;
+
+  // Background grid
+  const gridGroup = document.createElementNS("http://www.w3.org/2000/svg", "g");
+  for (let i = 0; i <= 5; i++) {
+    const y = P.top + (innerH * i) / 5;
+    const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+    line.setAttribute("x1", P.left);
+    line.setAttribute("x2", P.left + innerW);
+    line.setAttribute("y1", y);
+    line.setAttribute("y2", y);
+    line.setAttribute("stroke", "#e2e8f0");
+    line.setAttribute("stroke-width", "1");
+    gridGroup.appendChild(line);
+  }
+  svg.appendChild(gridGroup);
+
+  // Title
+  const title = document.createElementNS("http://www.w3.org/2000/svg", "text");
+  title.setAttribute("x", W / 2);
+  title.setAttribute("y", 18);
+  title.setAttribute("text-anchor", "middle");
+  title.setAttribute("font-size", "13");
+  title.setAttribute("font-weight", "600");
+  title.setAttribute("fill", "#334155");
+  if (series.length === 0) {
+    title.textContent = `No projection available : ${taskLabels[task]} × ${tier}-tier not recommended`;
+  } else {
+    title.textContent = `Cumulative tokens over ${series.length - 1} sessions — ${taskLabels[task]} on ${tier}-tier`;
+  }
+  svg.appendChild(title);
+
+  if (series.length === 0) return;
+
+  // Scales
+  const maxX = series.length - 1;
+  const maxY = series[series.length - 1].y;
+  const sx = x => P.left + (x / maxX) * innerW;
+  const sy = y => P.top + innerH - (y / (maxY || 1)) * innerH;
+
+  // Axis Y labels
+  for (let i = 0; i <= 5; i++) {
+    const y = P.top + (innerH * i) / 5;
+    const val = maxY * (1 - i / 5);
+    const txt = document.createElementNS("http://www.w3.org/2000/svg", "text");
+    txt.setAttribute("x", P.left - 8);
+    txt.setAttribute("y", y + 4);
+    txt.setAttribute("text-anchor", "end");
+    txt.setAttribute("font-size", "11");
+    txt.setAttribute("fill", "#64748b");
+    txt.textContent = formatTokens(val);
+    svg.appendChild(txt);
+  }
+
+  // Axis X labels
+  const xTicks = [0, Math.ceil(maxX * 0.25), Math.ceil(maxX * 0.5), Math.ceil(maxX * 0.75), maxX];
+  xTicks.forEach(tx => {
+    const txt = document.createElementNS("http://www.w3.org/2000/svg", "text");
+    txt.setAttribute("x", sx(tx));
+    txt.setAttribute("y", P.top + innerH + 20);
+    txt.setAttribute("text-anchor", "middle");
+    txt.setAttribute("font-size", "11");
+    txt.setAttribute("fill", "#64748b");
+    txt.textContent = tx === 0 ? "Start" : `Session ${tx}`;
+    svg.appendChild(txt);
+  });
+
+  // Curve (area + line)
+  const areaPath = series.map((p, i) => (i === 0 ? "M" : "L") + `${sx(p.x)} ${sy(p.y)}`).join(" ") +
+                   ` L ${sx(maxX)} ${sy(0)} L ${sx(0)} ${sy(0)} Z`;
+  const linePath = series.map((p, i) => (i === 0 ? "M" : "L") + `${sx(p.x)} ${sy(p.y)}`).join(" ");
+
+  const area = document.createElementNS("http://www.w3.org/2000/svg", "path");
+  area.setAttribute("d", areaPath);
+  area.setAttribute("fill", "#3b82f6");
+  area.setAttribute("fill-opacity", "0.15");
+  svg.appendChild(area);
+
+  const line = document.createElementNS("http://www.w3.org/2000/svg", "path");
+  line.setAttribute("d", linePath);
+  line.setAttribute("fill", "none");
+  line.setAttribute("stroke", "#3b82f6");
+  line.setAttribute("stroke-width", "2.5");
+  line.setAttribute("stroke-linejoin", "round");
+  svg.appendChild(line);
+
+  // Final point marker
+  const lastPoint = series[series.length - 1];
+  const dot = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+  dot.setAttribute("cx", sx(lastPoint.x));
+  dot.setAttribute("cy", sy(lastPoint.y));
+  dot.setAttribute("r", "5");
+  dot.setAttribute("fill", "#1e40af");
+  dot.setAttribute("stroke", "#ffffff");
+  dot.setAttribute("stroke-width", "2");
+  svg.appendChild(dot);
+
+  // Final value label
+  const label = document.createElementNS("http://www.w3.org/2000/svg", "text");
+  label.setAttribute("x", sx(lastPoint.x) - 10);
+  label.setAttribute("y", sy(lastPoint.y) - 10);
+  label.setAttribute("text-anchor", "end");
+  label.setAttribute("font-size", "13");
+  label.setAttribute("font-weight", "700");
+  label.setAttribute("fill", "#1e40af");
+  label.textContent = formatTokens(lastPoint.y);
+  svg.appendChild(label);
+}
+
+// Initial render
+updateAll();
+</script>
+
+</body>
+</html>

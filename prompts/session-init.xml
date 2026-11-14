@@ -1,0 +1,83 @@
+<!--
+Generic opening message for an interactive working session.
+Replace every [PLACEHOLDER] before pasting it as the first message of the session.
+For an unattended run, use scheduled-task.preprompt.md instead.
+-->
+
+<session_init project="[PROJECT_NAME]" sprint="[SPRINT_ID]" type="[architecture|feature|audit|cleanup]" mode="economy">
+
+<budget_strategy>
+Economy mode (workspace default, AGENT.md principle model-economy) :
+- Orchestrator : high-tier (coordination)
+- Sub-agents : mid-tier first ; high-tier only for the cases listed in model-economy
+- Tool budget per agent : 25 tests / 30 refactor / 50 initial audit (AGENT.md agent-budget)
+- An agent that stalls : stop, partial report, re-brief with more context
+</budget_strategy>
+
+<skills_load priority="mandatory">
+1. skill-root (always first)
+2. [CODE_STYLE_SKILL] for any code
+3. [DOMAIN_SKILL] according to the project
+</skills_load>
+
+<context_paths>
+Workspace root : [WORKSPACE_ROOT]
+Project        : [WORKSPACE_ROOT]/[PROJECT_PATH]/
+Operator env   : .claude/context/operator-env.md (names of variables and aliases, never values)
+</context_paths>
+
+<orchestration_rules source="AGENT.md ROOT + ORCHESTRATEUR.md">
+- etat-des-lieux and project-table at session start
+- task-completion-archive at task end
+- multi-agents-default for any task over 3 steps ; self-execution under 3 files / 6 steps
+- backlog-event-driven micro-writes
+- test-agile (blocker) : tests in the SAME session as the code
+- cross-platform (blocker)
+- git : agents prepare commands, the operator runs them
+- LOCK : diff, justification, explicit go, then application
+- nothing-deleted : moves to _to-delete/YYYY-MM-DD/
+</orchestration_rules>
+
+<bootstrap>
+1. Load the skills listed in skills_load.
+2. Targeted grep (no full re-read) on :
+   - [PROJECT_PATH]/AGENT.md (project section)
+   - [PROJECT_PATH]/NEXT-STEPS.md
+   - the last orchestrator log in .claude/logs/orchestrator/
+3. Report in 5 to 8 lines : state, anomalies, plan, request for validation.
+4. After validation : create the session log .claude/logs/orchestrator/YYYY-MM-DD-HHMM-[sprint-slug].md
+</bootstrap>
+
+<mission>
+[DESCRIBE THE MISSION IN 3 TO 5 LINES]
+
+Items :
+[LIST ITEMS WITH TAG [HIGH|MEDIUM|LOW] AND [AGENT PERSONA]]
+</mission>
+
+<execution_strategy>
+- Wave 1 : [X] mid-tier agents in parallel on [LIST], each brief ending with the mandatory-trace block
+- Checkpoint : build + tests (the operator runs anything that needs his machine)
+- Audit by an agent that did not write the code : GO / GO WITH CONDITIONS / NO-GO
+- Wave 2 if green : [Y] agents on tests / coverage
+</execution_strategy>
+
+<constraints>
+- No git write command run by an agent : exact commands prepared for the operator
+- No emoji in produced files
+- Code in English, discussion in [PRIMARY_LANGUAGE]
+- Cross-platform by default
+</constraints>
+
+<session_end>
+1. DASHBOARD : statuses and recent activity
+2. claude-friendly backlog : event-driven updates
+3. NEXT-STEPS : promote Next if Now is empty
+4. Orchestrator log : agents launched = traces written (closure gate)
+</session_end>
+
+<entry_command>
+Go. Bootstrap + plan for validation.
+</entry_command>
+
+</session_init>

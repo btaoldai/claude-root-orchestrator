@@ -1,0 +1,12 @@
+# Weekly updates of the GitHub Actions used by the workflows.
+# The template ships no package manifest; add an ecosystem here if your instance has one.
+version: 2
+updates:
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "UTC"
+    open-pull-requests-limit: 3

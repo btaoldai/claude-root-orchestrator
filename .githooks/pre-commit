@@ -1,0 +1,13 @@
+#!/usr/bin/env sh
+# Pre-commit: refuse a commit that contains a secret (gitleaks).
+# Enable once per clone:  git config core.hooksPath .githooks
+# gitleaks: https://github.com/gitleaks/gitleaks (package manager or release binary).
+if ! command -v gitleaks >/dev/null 2>&1; then
+  echo "pre-commit: gitleaks not found, commit refused (install gitleaks, or unset core.hooksPath knowingly)" >&2
+  exit 1
+fi
+# gitleaks >= 8.19 uses "git --staged"; older versions only know "protect --staged".
+if gitleaks git --help >/dev/null 2>&1; then
+  exec gitleaks git --staged --redact --verbose
+fi
+exec gitleaks protect --staged --redact --verbose
