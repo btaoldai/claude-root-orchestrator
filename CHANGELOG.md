@@ -6,6 +6,15 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [2.3.1] — 2026-11-14
+
+### Fixed
+
+- `.github/workflows/gitleaks.yml`: the job token now has `pull-requests: read`. On pull
+  requests, gitleaks-action lists the pull request commits through the API; with
+  `contents: read` only, the call failed with "Resource not accessible by integration" and
+  every pull request (Dependabot included) was red. Pushes were not affected.
+
 ## [2.3.0] — 2026-11-12
 
 ### Added
